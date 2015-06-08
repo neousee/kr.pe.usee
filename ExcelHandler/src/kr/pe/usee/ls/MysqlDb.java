@@ -9,21 +9,27 @@ public class MysqlDb {
 	
 	// JDBC driver name and database URL
  	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
- 	static final String DB_URL = "jdbc:mysql://localhost/usee";
-
- 	//  Database credentials
-	static final String USER = "root";
-	static final String PASS = "apmsetup";
- 
+  
 	Connection conn = null;
+
+	String connectionUrl = "jdbc:mysql://localhost:3306/usee?useUnicode=yes&characterEncoding=UTF-8";
+	String connectionUser = "root";
+	String connectionPassword = "apmsetup";
+
+	public MysqlDb() {
+		
+	}
+	
+	public MysqlDb(String connectionUrl, String id, String pw) {
+		this.connectionUrl = connectionUrl;
+		this.connectionUser = id;
+		this.connectionPassword = pw;
+	}
 
 	public Connection getConn() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-		Class.forName("com.mysql.jdbc.Driver").newInstance();
-		String connectionUrl = "jdbc:mysql://localhost:3306/usee?useUnicode=yes&characterEncoding=UTF-8";
-		String connectionUser = "root";
-		String connectionPassword = "apmsetup";
-		conn = DriverManager.getConnection(connectionUrl, connectionUser, connectionPassword);
+		Class.forName(JDBC_DRIVER).newInstance();
+		conn = DriverManager.getConnection(this.connectionUrl, this.connectionUser, this.connectionPassword);
 	    return conn;
 	}
 

@@ -21,7 +21,7 @@ public class MigListReader {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
     	MigListReader reader = new MigListReader();
     	//reader.setSource(new File(args[0]));
-    	reader.setSource(new File("D:\\myworkspace\\All_20150603.xlsx"));
+    	reader.setSource(new File("D:\\myworkspace\\All_20150603.xlsx"),args);
     }
     
 	/**
@@ -32,7 +32,7 @@ public class MigListReader {
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	private void setSource(File file) throws IOException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+	private void setSource(File file, String[] args) throws IOException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         FileInputStream fis = new FileInputStream(file);
         workbook = new XSSFWorkbook(fis);		
 
@@ -74,7 +74,7 @@ public class MigListReader {
         System.out.println(hm);
         fis.close();
         
-        MysqlDb db = new MysqlDb();
+        MysqlDb db = new MysqlDb(args[0], args[1], args[2]);
         db.getConn();
         db.upsert(list);
 	}
