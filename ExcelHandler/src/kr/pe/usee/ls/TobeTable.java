@@ -1,8 +1,10 @@
 package kr.pe.usee.ls;
 
 import java.io.Serializable;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class TobeTable implements Serializable {
 	
@@ -31,6 +33,7 @@ public class TobeTable implements Serializable {
 	String migSqlDueDt ;
 	String migWay ;
 	String version ;
+	ArrayList<AsisTable> asisTables = new ArrayList<AsisTable>();
 	
 	public TobeTable() {
 		
@@ -39,12 +42,36 @@ public class TobeTable implements Serializable {
 	public TobeTable(ResultSet rs) throws SQLException {
 		setTobeDataFromResult(rs);
 	}
+	
+	public TobeTable(ResultSet rs, int i) throws SQLException {
+		system      = rs.getString(1 ) == null ? "" :rs.getString(1 );
+		schema      = rs.getString(2 ) == null ? "" :rs.getString(2 );
+		table       = rs.getString(3 ) == null ? "" :rs.getString(3 );
+		apCode      = rs.getString(4 );
+		comment     = rs.getString(5 );
+		relation    = rs.getString(6 );
+		cdVsTr      = rs.getString(7 );
+		migRange    = rs.getString(8 );
+		incCnt      = rs.getString(9 );
+		incUnit     = rs.getString(10);
+		bizNonCmplt = rs.getString(11);
+		cleanYn     = rs.getString(12);
+		cleanDueDt  = rs.getString(13);
+		cleanOwner  = rs.getString(14);
+		mapDefDueDt = rs.getString(15);
+		fillupOwner = rs.getString(16);
+		fillupDueDt = rs.getString(17);
+		migSqlDueDt = rs.getString(18);
+		migWay      = rs.getString(19);
+		version     = rs.getString(20);
+	
+	}
 
 	public void setTobeDataFromResult(ResultSet rs) throws SQLException {
 		if(rs.next()) {
-			system      = rs.getString(1 );
-			schema      = rs.getString(2 );
-			table       = rs.getString(3 );
+			system      = rs.getString(1 ) == null ? "" :rs.getString(1 );
+			schema      = rs.getString(2 ) == null ? "" :rs.getString(2 );
+			table       = rs.getString(3 ) == null ? "" :rs.getString(3 );
 			apCode      = rs.getString(4 );
 			comment     = rs.getString(5 );
 			relation    = rs.getString(6 );
@@ -66,18 +93,21 @@ public class TobeTable implements Serializable {
 	}
 	
 	public String getSystem() {
+		if(system==null) return "";
 		return system;
 	}
 	public void setSystem(String system) {
 		this.system = system;
 	}
 	public String getSchema() {
+		if(schema==null) return "";
 		return schema;
 	}
 	public void setSchema(String schema) {
 		this.schema = schema;
 	}
 	public String getTable() {
+		if(table==null) return "";
 		return table;
 	}
 	public void setTable(String table) {
@@ -188,5 +218,19 @@ public class TobeTable implements Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
+
+	public ArrayList<AsisTable> getAsisTables() {
+		return asisTables;
+	}
+
+	public void setAsisTables(ArrayList<AsisTable> asisTables) {
+		this.asisTables = asisTables;
+	}
+
+	public void addAsis(AsisTable asisTable) {
+		this.asisTables.add(asisTable);		
+	}
+	
+	
 	 
 }

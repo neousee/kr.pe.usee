@@ -1,9 +1,22 @@
-package kr.pe.usee.ls;
+package kr.pe.usee.db.mysql;
 
 import java.io.UnsupportedEncodingException;
 //STEP 1. Import required packages
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Set;
+
+import kr.pe.usee.excel.AttrResultSet;
+import kr.pe.usee.excel.GrpResultSet;
+import kr.pe.usee.excel.KbfAttrValueList;
+import kr.pe.usee.excel.PogRed;
+import kr.pe.usee.excel.PogRow;
+import kr.pe.usee.excel.ProdInfo;
 
 public class MysqlDb {
 
@@ -13,9 +26,9 @@ public class MysqlDb {
   
 	Connection conn = null;
 
-	String connectionUrl;
-	String connectionUser;
-	String connectionPassword;
+	String connectionUrl = "jdbc:mysql://localhost:3306/usmig?useUnicode=yes&characterEncoding=UTF-8";
+	String connectionUser = "root";
+	String connectionPassword = "apmsetup";
 
 	public MysqlDb() {
 		
@@ -27,11 +40,12 @@ public class MysqlDb {
 		this.connectionPassword = pw;
 	}
 
-	public Connection getConn() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+	public void getConn() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
 		Class.forName(JDBC_DRIVER).newInstance();
 		conn = DriverManager.getConnection(this.connectionUrl, this.connectionUser, this.connectionPassword);
-	    return conn;
+
+		//System.out.println("Hello connect MySQL!");
 	}
 
 	public void closeConn() throws SQLException {
@@ -44,10 +58,11 @@ public class MysqlDb {
 		}catch(SQLException se){
 		       se.printStackTrace();
 		}//end finally try
-		System.out.println("Goodbye!");
+		//System.out.println("Goodbye!");
 
 	}
-	
+
+	/*
 	public void upsert(ListRow [] list) throws SQLException, UnsupportedEncodingException {
 		//conn.setAutoCommit(false);
 		TobeTable tobe;
@@ -77,10 +92,10 @@ public class MysqlDb {
 				}
 				
 			}		  
-		}/* catch (SQLException se) {
+		} catch (SQLException se) {
 			System.out.println(se.getErrorCode() + ":" +se.getMessage());
 			conn.rollback();
-		}*/
+		}
 		//conn.commit();
 		//conn.setAutoCommit(true);
 	}
@@ -227,29 +242,200 @@ public class MysqlDb {
 	    prepStmt.close();
 	    return asisData;
 	}
-
-	public TobeTable selectTobeFromDb(Connection conn, TobeTable tobe) throws SQLException, UnsupportedEncodingException {
-	    TobeTable tobeData = null;
-
+*/
+	public Hashtable<String, PogRow> selectPogList() throws SQLException, UnsupportedEncodingException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+		getConn();
+	    PogRow pog = null;
+	    Hashtable<String, PogRow> pogList = new Hashtable<String, PogRow>();
 		//String sqlStmt = "SELECT * FROM employees where last_name=? and first_name like ?";
-		String sqlStmt = "SELECT `system`, `schema`, `table`, `apCode`, `comment`, `relation`, `cdVsTr`, `migRange`, `incCnt`, `incUnit`, `bizNonCmplt`, `cleanYn`, `cleanDueDt`, `cleanOwner`, `mapDefDueDt`, `fillupOwner`, `fillupDueDt`, `migSqlDueDt`, `migWay`, `ver` FROM `tobetable` WHERE  1 = 1 and `system` = ? and `schema` = ? and `table` = ? and ver = ?";
+		String sqlStmt = "SELECT `prodCd`, `nm`, `tl1`, `tl2`, `tl3`, `tl4` FROM `poglistcate`";
 		System.out.println("SQL Statement:\n\t" + sqlStmt);
 		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
 		System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
-		prepStmt.setString(1, tobe.getSystem());
-		prepStmt.setString(2, tobe.getSchema());
-		prepStmt.setString(3, tobe.getTable());
-		prepStmt.setString(4, tobe.getVersion());
 		System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
 		ResultSet rs = prepStmt.executeQuery();
-	    if(rs.next()) {
-	    	tobeData = new TobeTable(rs);
-	    } else {
-	    	
+	    while(rs.next()) {
+	    	pog = new PogRow(rs);
+	    	pogList.put(pog.getProdCode(), pog);
 	    }
 	    rs.close();
 	    prepStmt.close();
-	    return tobeData;
+	    closeConn();
+	    return pogList;
+	}
+	
+	/**
+	 * SELECT `tl1`, `tl2`, `prodCdlist`, `l3List` FROM `poggrp01` WHERE tl1 = ?
+	 * @param lvl1
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public ArrayList<GrpResultSet> getGrpResultSet(String lvl1) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		ArrayList<GrpResultSet> grpResultSet = new ArrayList<GrpResultSet>();
+		//String sqlStmt = "SELECT * FROM employees where last_name=? and first_name like ?";
+		String sqlStmt = "SELECT `tl1`, `tl2`, `prodCdlist`, `l3List` FROM `poggrp01` WHERE tl1 = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, lvl1);
+		System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		GrpResultSet grpResult;
+	    while(rs.next()) {
+	    	grpResult = new GrpResultSet(rs);
+	    	grpResultSet.add(grpResult);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return grpResultSet;
+	}
+
+	/**
+	 * SELECT `l1`, `l2`, `l3`, `l4`, `attrlist`, `at1`, `at2`, `at3`, `at4` FROM `selectedList` WHERE l1 = ? AND l2 = ?
+	 * @param grpResult
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public Set<String> getSelectedList(GrpResultSet grpResult) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		Hashtable<String, String> attr = new Hashtable<String, String>(); 
+		//String sqlStmt = "SELECT * FROM employees where last_name=? and first_name like ?";
+		String sqlStmt = "SELECT `l1`, `l2`, `l3`, `l4`, `attrlist`, `at1`, `at2`, `at3`, `at4` FROM `selectedList` WHERE l1 = ? AND l2 = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, grpResult.getTl1());
+		prepStmt.setString(2, grpResult.getTl2());
+		System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		AttrResultSet ar;
+	    while(rs.next()) {
+	    	ar = new AttrResultSet(rs);
+	    	if(!"".equals(ar.getA1()) && ar.getA1() != null) attr.put(ar.getA1(),"A");
+	    	if(!"".equals(ar.getA2()) && ar.getA2() != null) attr.put(ar.getA2(),"A");
+	    	if(!"".equals(ar.getA3()) && ar.getA3() != null) attr.put(ar.getA3(),"A");
+	    	if(!"".equals(ar.getA4()) && ar.getA4() != null) attr.put(ar.getA4(),"A");
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return attr.keySet();
+	}
+
+	/**
+	 * SELECT * FROM `kbflist`
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public Hashtable<String, KbfAttrValueList> selectAttrValueSetList() throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		Hashtable<String, KbfAttrValueList> attr = new Hashtable<String, KbfAttrValueList>(); 
+		//String sqlStmt = "SELECT * FROM employees where last_name=? and first_name like ?";
+		String sqlStmt = "SELECT * FROM `kbflist`";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		KbfAttrValueList kavl;
+	    while(rs.next()) {
+	    	kavl = new KbfAttrValueList(rs);
+	    	attr.put(kavl.getLsl1()+":"+kavl.getLsl2()+":"+kavl.getLsl3()+":"+kavl.getAttr(), kavl);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return attr;
+	}
+
+	/**
+	 * SELECT * FROM `pogkbfattrlist` WHERE prodCd = ?
+	 * @param prodInfo
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public Hashtable<String, KbfAttrValueList> getAttrValList(ProdInfo prodInfo) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		Hashtable<String, KbfAttrValueList> attr = new Hashtable<String, KbfAttrValueList>(); 
+		String sqlStmt = "SELECT * FROM `pogkbfattrlist` WHERE prodCd = ?";
+		//System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, prodInfo.getCd());
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		KbfAttrValueList kavl;
+	    while(rs.next()) {
+	    	kavl = new KbfAttrValueList(rs);
+	    	attr.put(kavl.getAttr(), kavl);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return attr;
+		
+	}
+
+	public void getAttrList(ProdInfo prodInfo) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public ArrayList<ProdInfo2> getMoreGrpResult(GrpResultSet grpResult) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		ArrayList<ProdInfo2> listProdInfo = new ArrayList<ProdInfo2>();
+		//String sqlStmt = "SELECT * FROM employees where last_name=? and first_name like ?";
+		String sqlStmt = "SELECT * FROM `poglistcate` WHERE prodCd IN ("+grpResult.getInStr()+") ORDER BY tl3";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		GrpResultSet grpResultSet;
+		ProdInfo2 prodInfo2;
+	    while(rs.next()) {
+	    	prodInfo2 = new ProdInfo2(rs);
+	    	listProdInfo.add(prodInfo2);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return listProdInfo;
+	}
+
+	public Hashtable<String, PogRed> getPogRed() throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		Hashtable<String,PogRed> pogRedList = new Hashtable<String,PogRed>();
+		String sqlStmt = "SELECT * FROM `pog_red`";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		GrpResultSet grpResultSet;
+		PogRed pogRed;
+	    while(rs.next()) {
+	    	pogRed = new PogRed(rs);
+	    	pogRedList.put(pogRed.getProd_cd(),pogRed);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return pogRedList;
 	}
 	
 	

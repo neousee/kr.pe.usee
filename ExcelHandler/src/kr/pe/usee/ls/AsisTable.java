@@ -24,6 +24,14 @@ public class AsisTable implements Serializable {
 		setAsisDataFromResult(rs);
 	}
 	
+	public AsisTable(String asSystem, String asSchema, String asTable,
+			String asComment) {
+		this.system = asSystem   == null ? "" : asSystem ;
+		this.schema = asSchema   == null ? "" : asSchema ;
+		this.table = asTable     == null ? "" : asTable  ;
+		this.comment = asComment == null ? "" : asComment;
+	}
+
 	public void setAsisDataFromResult(ResultSet rs) throws SQLException {
 		if(rs.next()) {
 			system      = rs.getString(1 );

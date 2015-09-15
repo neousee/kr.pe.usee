@@ -1,25 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>MyJava_LS</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
-  <name>MyJava_LS</name>
-  <description>LS 프로젝트에서 사용되는 Java</description>
-    <repositories>
-      <repository>
-        <id>central</id>
-        <name>Central Repository</name>
-        <url>http://repo.maven.apache.org/maven2</url>
-        <layout>default</layout>
-        <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-    	<id>mesir-repo</id>
-        <url>http://mesir.googlecode.com/svn/trunk/mavenrepo</url>
-    </repository>
-  </repositories>
-  
+  <groupId>kr.pe.usee</groupId>
+  <artifactId>ExcelDataValidation</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -45,7 +28,6 @@
       </plugin>
     </plugins>
   </build>
-  <groupId>kr.pe.usee</groupId>
   <dependencies>
   	<dependency>
   		<groupId>org.apache.poi</groupId>
@@ -63,10 +45,14 @@
 		<version>5.1.35</version>
 	</dependency>
 	<dependency>
-		<groupId>com.oracle</groupId>
-		<artifactId>ojdbc14</artifactId>
-		<version>10.2.0.4.0</version>
+		<groupId>net.sf.jsqlparser</groupId>
+		<artifactId>jsqlparser</artifactId>
+		<version>0.8.0</version>
 	</dependency>
-	
+	<dependency>
+    <groupId>com.github.jsqlparser</groupId>
+    <artifactId>jsqlparser</artifactId>
+    <version>0.9</version>
+	</dependency>
   </dependencies>
 </project>
