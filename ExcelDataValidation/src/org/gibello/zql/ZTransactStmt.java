@@ -17,9 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.*;
-import java.util.*;
-
 /**
  * ZTransactStmt: an SQL statement that concerns database transactions
  * (example: COMMIT, ROLLBACK, SET TRANSACTION)

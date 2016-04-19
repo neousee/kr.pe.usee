@@ -17,7 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.* ;
 import java.util.* ;
 
 /**
@@ -131,7 +130,8 @@ public class ZExpression implements ZExp {
     return buf.toString();
   }
 
-  public String toString() {
+  @Override
+public String toString() {
 
     if(op_.equals("?")) return op_; // For prepared columns ("?")
 

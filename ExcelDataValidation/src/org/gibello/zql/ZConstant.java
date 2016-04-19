@@ -17,9 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.* ;
-import java.util.* ;
-
 /**
  * ZConstant: a representation of SQL constants
  */
@@ -55,7 +52,8 @@ public class ZConstant implements ZExp {
    */
   public int getType() { return type_; }
 
-  public String toString() {
+  @Override
+public String toString() {
     if(type_ == STRING) return '\'' + val_ + '\'';
     else return val_;
   }

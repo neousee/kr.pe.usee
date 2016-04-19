@@ -17,9 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.* ;
-import java.util.* ;
-
 /**
  * ZSelectItem: an item in the SELECT part of an SQL query.
  * (The SELECT part of a query is a Vector of ZSelectItem).

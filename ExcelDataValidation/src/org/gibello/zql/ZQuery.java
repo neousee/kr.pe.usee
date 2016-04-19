@@ -17,7 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.* ;
 import java.util.* ;
 
 /**
@@ -122,7 +121,8 @@ public class ZQuery implements ZStatement, ZExp {
   public boolean isForUpdate() { return forupdate_; }
 
 
-  public String toString() {
+  @Override
+public String toString() {
     StringBuffer buf = new StringBuffer("select ");
     if(distinct_) buf.append("distinct ");
 

@@ -17,7 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.*;
 import java.util.*;
 
 /**
@@ -90,7 +89,8 @@ public class ZInsert implements ZStatement {
     return (ZQuery)valueSpec_;
   }
 
-  public String toString() {
+  @Override
+public String toString() {
     StringBuffer buf = new StringBuffer("insert into " + table_);
     if(columns_ != null && columns_.size() > 0) {
       //buf.append(" " + columns_.toString());

@@ -17,9 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.* ;
-import java.util.* ;
-
 /**
  * ZStatement: a common interface for all SQL statements.
  */

@@ -17,7 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.* ;
 import java.util.* ;
 
 /**
@@ -87,7 +86,8 @@ public class ZAliasedName implements java.io.Serializable {
     return val.trim();
   }
 
-  public String toString() {
+  @Override
+public String toString() {
     if(alias_ == null) return strform_;
     else return strform_ + " " + alias_;
   }

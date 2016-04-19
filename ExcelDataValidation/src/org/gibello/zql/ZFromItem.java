@@ -17,9 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.* ;
-import java.util.* ;
-
 /**
  * ZFromItem: an SQL FROM clause (example: the FROM part of a SELECT...FROM).
  */

@@ -17,9 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.*;
-import java.util.*;
-
 /**
  * ZDelete: an SQL DELETE statement.<br>
  * SQL Syntax: DELETE [from] table [where Expression];
@@ -54,7 +51,8 @@ public class ZDelete implements ZStatement {
    */
   public ZExp getWhere() { return where_; }
 
-  public String toString() {
+  @Override
+public String toString() {
     StringBuffer buf = new StringBuffer("delete ");
     if(where_ != null) buf.append("from ");
     buf.append(table_);

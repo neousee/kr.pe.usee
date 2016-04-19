@@ -45,7 +45,8 @@ public class ZOrderBy implements java.io.Serializable {
    */
   public ZExp getExpression() { return exp_; }
 
-  public String toString() {
+  @Override
+public String toString() {
     return exp_.toString() + " " + (asc_ ? "ASC" : "DESC");
   }
 };

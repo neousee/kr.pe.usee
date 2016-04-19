@@ -17,7 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.*;
 import java.util.*;
 
 /**

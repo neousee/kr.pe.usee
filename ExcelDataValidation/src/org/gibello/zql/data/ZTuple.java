@@ -17,12 +17,9 @@
 
 package org.gibello.zql.data;
 
-import java.lang.*;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
-
-import org.gibello.zql.*;
 
 public class ZTuple {
 
@@ -211,7 +208,8 @@ public class ZTuple {
      * Returns a string representation of the object
      * @return a string representation of the object
      */
-    public String toString()
+    @Override
+	public String toString()
     {
 	Object att;
 	Object value;

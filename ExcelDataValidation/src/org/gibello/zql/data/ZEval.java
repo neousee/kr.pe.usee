@@ -210,7 +210,7 @@ public class ZEval {
 
     String op = exp.getOperator();
 
-    Object o1 = evalExpValue(tuple, (ZExp)exp.getOperand(0));
+    Object o1 = evalExpValue(tuple, exp.getOperand(0));
     if(! (o1 instanceof Double))
       throw new SQLException("ZEval.evalNumericExp(): expression not numeric");
     Double dobj = (Double)o1;
@@ -219,7 +219,7 @@ public class ZEval {
 
       double val = dobj.doubleValue();
       for(int i = 1; i < exp.nbOperands(); i++) {
-        Object obj = evalExpValue(tuple, (ZExp)exp.getOperand(i));
+        Object obj = evalExpValue(tuple, exp.getOperand(i));
         val += ((Number)obj).doubleValue();
       }
       return val;
@@ -229,7 +229,7 @@ public class ZEval {
       double val = dobj.doubleValue();
       if(exp.nbOperands() == 1) return -val;
       for(int i = 1; i < exp.nbOperands(); i++) {
-        Object obj = evalExpValue(tuple, (ZExp)exp.getOperand(i));
+        Object obj = evalExpValue(tuple, exp.getOperand(i));
         val -= ((Number)obj).doubleValue();
       }
       return val;
@@ -238,7 +238,7 @@ public class ZEval {
 
       double val = dobj.doubleValue();
       for(int i = 1; i < exp.nbOperands(); i++) {
-        Object obj = evalExpValue(tuple, (ZExp)exp.getOperand(i));
+        Object obj = evalExpValue(tuple, exp.getOperand(i));
         val *= ((Number)obj).doubleValue();
       }
       return val;
@@ -247,7 +247,7 @@ public class ZEval {
 
       double val = dobj.doubleValue();
       for(int i = 1; i < exp.nbOperands(); i++) {
-        Object obj = evalExpValue(tuple, (ZExp)exp.getOperand(i));
+        Object obj = evalExpValue(tuple, exp.getOperand(i));
         val /= ((Number)obj).doubleValue();
       }
       return val;
@@ -256,7 +256,7 @@ public class ZEval {
 
       double val = dobj.doubleValue();
       for(int i = 1; i < exp.nbOperands(); i++) {
-        Object obj = evalExpValue(tuple, (ZExp)exp.getOperand(i));
+        Object obj = evalExpValue(tuple, exp.getOperand(i));
         val = Math.pow(val, ((Number)obj).doubleValue());
       }
       return val;

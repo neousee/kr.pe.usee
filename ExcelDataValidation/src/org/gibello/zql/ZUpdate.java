@@ -17,7 +17,6 @@
 
 package org.gibello.zql;
 
-import java.io.*;
 import java.util.*;
 
 /**
@@ -137,7 +136,8 @@ public class ZUpdate implements ZStatement {
    */
   public ZExp getWhere() { return where_; }
 
-  public String toString() {
+  @Override
+public String toString() {
     StringBuffer buf = new StringBuffer("update " + table_);
     if(alias_ != null) buf.append(" " + alias_);
     buf.append(" set ");
