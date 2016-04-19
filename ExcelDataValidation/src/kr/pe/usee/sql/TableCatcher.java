@@ -12,12 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import kr.pe.usee.sql.parser.ReservedWord;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.Select;
-
 import org.gibello.zql.ParseException;
 import org.gibello.zql.ZStatement;
 import org.gibello.zql.ZqlParser;
@@ -28,8 +22,8 @@ public class TableCatcher {
 	File dir;
 	File[] list;
 	public static void main(String[] args) throws IOException, JSQLParserException {
-		//TableCatcher tableCatcher = new TableCatcher("Z:\\60000.이행\\60100.IT공통\\30.MigrationSQL");
-		TableCatcher tableCatcher = new TableCatcher();
+		TableCatcher tableCatcher = new TableCatcher("Z:\\60000.이행\\60100.IT공통\\30.MigrationSQL");
+		//TableCatcher tableCatcher = new TableCatcher();
 	}
 
 	public File[] getDirList() {
@@ -56,7 +50,7 @@ public class TableCatcher {
 	}
 	
 	public TableCatcher() {
-		parse();
+		parse("");
 	}
 
 	public void parseSql(File sqlFile) throws IOException, JSQLParserException {
@@ -87,7 +81,7 @@ public class TableCatcher {
 			String s;
 			
 			while((s = br.readLine()) != null) { 
-				System.out.println(s);
+				//System.out.println(s);
 				arr = s.split(" ");
 				sb = new StringBuffer();
 				if(isSelect) {
@@ -142,11 +136,11 @@ public class TableCatcher {
 				}
 				sbAll.append(sb.toString().toUpperCase());
 			} 
-			System.out.println(sbAll.toString());
+			//System.out.println(sbAll.toString());
 	//		list = findTable3(sbAll.toString());
 			//list = findTable3(sql);
 
-			System.out.println(list.toString()); 
+			//System.out.println(list.toString()); 
 			fr.close();
 		} catch (java.io.IOException ie) {
 			System.out.println(ie.getMessage());
@@ -158,10 +152,10 @@ public class TableCatcher {
 			System.out.println(npe.getMessage());
 		}*/
 		
-		parse();
+		parse(sbAll.toString());
 	}
 	
-	private void parse() {
+	private void parse(String s) {
 		
 		String sample = "";
 		
@@ -203,7 +197,7 @@ public class TableCatcher {
 		sample += ";";
 
 		
-		tokenize(sample);
+		tokenize(s);
 		
 	}
 	
@@ -241,8 +235,12 @@ public class TableCatcher {
 
 	private void print(String[] t) {
 		System.out.println("----------------------------");
+		try {
 		for(String a:t) {
 			System.out.print(a+" ");
+		}
+		} catch (java.lang.NullPointerException npe) {
+			System.out.println(npe.getMessage());
 		}
 		System.out.println("\r\n----------------------------");
 		
@@ -280,6 +278,7 @@ public class TableCatcher {
 		getSelectList(tk,selectQueryList);
 		
 		for(String[] selectTk:selectQueryList) {
+			if(selectTk !=null)
 			parseSelectSingle(selectTk);
 		}
 		return rt;		
@@ -289,21 +288,30 @@ public class TableCatcher {
 		if(tk[0].trim().startsWith("(")) {
 			tk = removeBracket(tk);
 		} 
-		String[] fromTk = findFrom(tk);
-		
-		if(fromTk[0].trim().startsWith(ReservedWord.LEFT_PARA)) {
-			
-		} else {
-			findTables(fromTk);
+		SelectStatment selectStmt = new SelectStatment(tk);
+		String[] fromTk = new String[0];
+		try {
+			fromTk = findFrom(tk);
+			if(fromTk[0].trim().startsWith(ReservedWord.LEFT_PARA)) {
+				
+			} else {
+				findTables(fromTk);
+			}
+		} catch(java.lang.NegativeArraySizeException nase) {
+			System.out.println(nase.getMessage());
 		}
 	}
 	
+	/**
+	 * find from 'FROM Cluase'
+	 * @param fromTk
+	 */
 	private void findTables(String[] fromTk) {
 		System.out.println(fromTk);
 		
 	}
 
-	private String[] findFrom(String[] tk) {
+	private String[] findFrom(String[] tk) throws java.lang.NegativeArraySizeException {
 		int idxFrom = 0;
 		int idxWhere = 0;
 		String rt[];
@@ -350,7 +358,7 @@ public class TableCatcher {
 			} else */
 			
 			if(rt[i].startsWith(ReservedWord.KWD_UNION)) {
-				System.out.println(ReservedWord.KWD_UNION);
+				//System.out.println(ReservedWord.KWD_UNION);
 				rtArray = splitArray(rt,i);
 				break;
 			} else if(rt[i].startsWith(ReservedWord.KWD_MINUS)) {
@@ -390,6 +398,12 @@ public class TableCatcher {
 			al2[i-index] = rt[i];
 		}
 		
+		if(al2[0].trim().startsWith(ReservedWord.KWD_UNION) && al2[1].trim().startsWith(ReservedWord.KWD_ALL)) {
+			al2 = removeOneTwo(al2);
+		} else if(al2[0].trim().startsWith(ReservedWord.KWD_UNION)) {
+			al2 = removeOnlyOne(al2);
+		}
+		
 		String[][] rtArray = new String[2][];
 		rtArray[0] = al1;
 		rtArray[1] = al2;
@@ -397,6 +411,20 @@ public class TableCatcher {
 		return rtArray;
 	}
 	
+	private String[] removeOneTwo(String[] al2) {
+		String[] arr = new String[al2.length-2];
+		for(int i=2;i<al2.length;i++) 
+			arr[i-2] = al2[i];
+		return arr;
+	}
+
+	private String[] removeOnlyOne(String[] al2) {
+		String[] arr = new String[al2.length-1];
+		for(int i=1;i<al2.length;i++) 
+			arr[i-1] = al2[i];
+		return arr;
+	}
+
 	private String[] parseSelect(String query) {
 		String[] rt;
 		String[] parsedQuery = query.split(" ");

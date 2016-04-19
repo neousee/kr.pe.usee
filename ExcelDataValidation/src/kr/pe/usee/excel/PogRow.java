@@ -3,8 +3,6 @@ package kr.pe.usee.excel;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.apache.poi.ss.usermodel.Row;
-
 public class PogRow {
 	
 	String prodCode;

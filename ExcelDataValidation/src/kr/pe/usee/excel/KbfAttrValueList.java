@@ -76,6 +76,32 @@ public class KbfAttrValueList {
 		
 	}
 	
+	public KbfAttrValueList(ArrayList<KbfAttrList> all, String kbfAttr) {
+		for(int i=0;i<all.size();i++) {
+			KbfAttrList kbfAttr1 = all.get(i);
+			atrrVal[i] = kbfAttr1.getKBF_ATTR_VAL_NM();
+		}
+		
+		attr      = kbfAttr    ;
+		for(int i=0;i<atrrVal.length;i++) {
+			try {
+			if("".endsWith(atrrVal[i])) {
+				atLength = i;
+				break;
+			} else {
+				atLength = i;
+			}
+			} catch (NullPointerException npe) {
+				atLength = i;
+				break;
+			}
+		}
+		attrValList = new ArrayList<String>();
+		for(int i=0;i<atLength;i++) {
+			attrValList.add(atrrVal[i]);
+		}
+	}
+
 	public String[] toStringArray() {
 		String[] arr = new String[this.attrValList.size()];
 		this.attrValList.toArray(arr);

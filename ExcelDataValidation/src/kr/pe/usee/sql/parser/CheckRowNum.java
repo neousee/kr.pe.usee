@@ -20,7 +20,6 @@ package kr.pe.usee.sql.parser;
  import java.io.*;
  import java.util.*;
  
- import java.sql.*;
  import org.gibello.zql.*;
  public class CheckRowNum
  {
@@ -48,7 +47,7 @@ package kr.pe.usee.sql.parser;
                     "<",
                     new ZConstant("ROWNUM", ZConstant.COLUMNNAME),
                     new ZConstant("900", ZConstant.NUMBER));
- vWhere.addOperand((ZExp)(obj));
+ vWhere.addOperand((obj));
 
          for ( int i =0; i < vWhere. nbOperands() ; i++)
          {

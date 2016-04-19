@@ -17,7 +17,6 @@ package kr.pe.usee.sql.parser;
  */
 
 
-import java.sql.SQLException;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;

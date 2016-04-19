@@ -1,5 +1,9 @@
 package kr.pe.usee.db.mysql;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 //STEP 1. Import required packages
 import java.sql.Connection;
@@ -11,12 +15,19 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Set;
 
+import kr.pe.usee.db.excel.KbfAttr;
+import kr.pe.usee.db.excel.KbfAttrValueList2;
+import kr.pe.usee.db.excel.Prod2;
 import kr.pe.usee.excel.AttrResultSet;
 import kr.pe.usee.excel.GrpResultSet;
+import kr.pe.usee.excel.Kbf;
+import kr.pe.usee.excel.KbfAttrList;
 import kr.pe.usee.excel.KbfAttrValueList;
 import kr.pe.usee.excel.PogRed;
 import kr.pe.usee.excel.PogRow;
+import kr.pe.usee.excel.Prod;
 import kr.pe.usee.excel.ProdInfo;
+import kr.pe.usee.excel.SelectedData;
 
 public class MysqlDb {
 
@@ -26,7 +37,7 @@ public class MysqlDb {
   
 	Connection conn = null;
 
-	String connectionUrl = "jdbc:mysql://localhost:3306/usmig?useUnicode=yes&characterEncoding=UTF-8";
+	String connectionUrl = "jdbc:mysql://localhost:3306/group?useUnicode=yes&characterEncoding=UTF-8";
 	String connectionUser = "root";
 	String connectionPassword = "apmsetup";
 
@@ -41,6 +52,15 @@ public class MysqlDb {
 	}
 
 	public void getConn() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+
+		Class.forName(JDBC_DRIVER).newInstance();
+		conn = DriverManager.getConnection(this.connectionUrl, this.connectionUser, this.connectionPassword);
+
+		//System.out.println("Hello connect MySQL!");
+	}
+	
+
+	public void getConn2() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
 		Class.forName(JDBC_DRIVER).newInstance();
 		conn = DriverManager.getConnection(this.connectionUrl, this.connectionUser, this.connectionPassword);
@@ -277,7 +297,7 @@ public class MysqlDb {
 		getConn();
 		ArrayList<GrpResultSet> grpResultSet = new ArrayList<GrpResultSet>();
 		//String sqlStmt = "SELECT * FROM employees where last_name=? and first_name like ?";
-		String sqlStmt = "SELECT `tl1`, `tl2`, `prodCdlist`, `l3List` FROM `poggrp01` WHERE tl1 = ?";
+		String sqlStmt = "SELECT `L1_CD` tl1, L2_CD tl2, `prodCdlist`, `l3List` FROM `prod_list5` WHERE tl1 = ?";
 		System.out.println("SQL Statement:\n\t" + sqlStmt);
 		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
 		System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
@@ -437,6 +457,590 @@ public class MysqlDb {
 	    closeConn();
 	    return pogRedList;
 	}
+
+	public static void insertKbfData(String l3, String prodCd, String prodNm,
+			String value, String ts) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		
+		String connectionUrl = "jdbc:mysql://localhost:3306/usmig?useUnicode=yes&characterEncoding=UTF-8";
+		String connectionUser = "root";
+		String connectionPassword = "apmsetup";
+
+		Class.forName(JDBC_DRIVER).newInstance();
+		Connection conn = DriverManager.getConnection(connectionUrl, connectionUser, connectionPassword);
+		String sqlStmt = "INSERT INTO group.cg_prod_kbf VALUES (?,?,?,?,?,?,?,?,'Y','USMIG',null,'USMIG',null)";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, l3);
+		prepStmt.setString(2, prodCd);
+		prepStmt.setString(3, prodNm);
+		prepStmt.setString(4, "");
+		prepStmt.setString(5, value);
+		prepStmt.setString(6, "");
+		prepStmt.setString(7, ts);
+		prepStmt.setString(8, "Y");
+		int result = prepStmt.executeUpdate();
+		//System.out.println("Insert result : "+result);
+		prepStmt.close();
+		conn.close();
+	}
 	
+	public static void insertSql() throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		String connectionUrl = "jdbc:mysql://localhost:3306/usmig?useUnicode=yes&characterEncoding=UTF-8";
+		String connectionUser = "root";
+		String connectionPassword = "apmsetup";
+
+		Class.forName(JDBC_DRIVER).newInstance();
+		Connection conn = DriverManager.getConnection(connectionUrl, connectionUser, connectionPassword);
+		File file = new File("D:\\work\\1119.sql");
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String t;
+		PreparedStatement prepStmt;
+		while( (t = br.readLine())!= null) {
+			prepStmt = conn.prepareStatement(t);
+			int result = prepStmt.executeUpdate();
+			prepStmt.close();
+		}
+		conn.close();
+	}
+
+	/**
+	 * Level2 List
+	 * 
+	 * @param substring
+	 * @return
+	 * @throws SQLException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 * @throws ClassNotFoundException 
+	 */
+	public Hashtable<String,PogRed> getLevel2List(String lvl1) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		Hashtable<String,PogRed> pogRedList = new Hashtable<String,PogRed>();
+		String sqlStmt = "SELECT * FROM `cg_cat`";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		GrpResultSet grpResultSet;
+		PogRed pogRed;
+	    while(rs.next()) {
+	    	pogRed = new PogRed(rs);
+	    	pogRedList.put(pogRed.getProd_cd(),pogRed);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return pogRedList;
+	}
+
+	/**
+	 * SELECT * FROM `prod_list5`
+	 * 
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public Hashtable<String, Prod> getProdList() throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		Hashtable<String,Prod> prodList = new Hashtable<String,Prod>();
+		String sqlStmt = "SELECT * FROM `prod_list5`";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		GrpResultSet grpResultSet;
+		Prod prod;
+	    while(rs.next()) {
+	    	prod = new Prod(rs);
+	    	prodList.put(prod.getPROD_CD(),prod);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return prodList;
+	}
+	/**
+	 * SELECT * FROM `prod_list5`
+	 * 
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public ArrayList<Prod2> getProdList2(String l1Cd, String l2Cd) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		ArrayList<Prod2> prodList = new ArrayList<Prod2>();
+		String sqlStmt = 
+				" SELECT L1_CD, l1_nm, L2_CD, l2_nm, pl.L3_CD, L3_NM, SORT_SEQ, L4_CD, L4_NM, PROD_CD, PROD_NM, PROD_SHRT_NM, PROD_OPER_STAT_CD, STAT, KBF_ATTR_ID, KBF_ATTR_NM, KBF_SHRT_NM, KBF_TYP_CD, GRP_USE_YN, l3k.USE_YN " +
+				" FROM prod_list5 pl, cg_kbf_l3 l3k " +
+				" WHERE pl.l3_cd = l3k.l3_cd " +
+				" AND l1_cd = ?" +
+				" AND l2_cd = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, l1Cd);
+		prepStmt.setString(2, l2Cd);
+		System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+	    while(rs.next()) {
+	    	prodList.add(new Prod2(rs));
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return prodList;
+	}
+
+	/**
+	 * SELECT * FROM `prod_list5` WHERE L1_CD = ?
+	 * 
+	 * @param substring
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public Hashtable<String,Prod> getL2ProdList(String substring) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+
+		getConn();
+		Hashtable<String,Prod> prodList = new Hashtable<String,Prod>();
+		String sqlStmt = "SELECT * FROM `prod_list5` WHERE L1_CD = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, substring);
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		Prod prod;
+	    while(rs.next()) {
+	    	prod = new Prod(rs);
+	    	prodList.put(prod.getPROD_CD(),prod);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return prodList;
+	}
+
+	/**
+	 * SELECT distinct L2_NM , L2_CD FROM `prod_list5` WHERE L1_CD = ?
+	 * 
+	 * @param substring
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public Hashtable<String,String> getL2List(String substring) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+
+		getConn();
+		Hashtable<String,String> l2List = new Hashtable<String,String>();
+		String sqlStmt = "SELECT distinct L2_NM , L2_CD FROM `prod_list5` WHERE L1_CD = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, substring);
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+	    while(rs.next()) {
+	    	l2List.put(rs.getString("L2_CD"), rs.getString("L2_NM"));
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return l2List;
+	}
+
+	/**
+	 * 중분류내의 KBF
+	 * @param l2
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public ArrayList<KbfAttr> getKbfList(String l2) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+
+		getConn();
+		Hashtable<String,Prod> prodList = new Hashtable<String,Prod>();
+		String sqlStmt = "SELECT a.L1_CD, a.L2_CD, b.L3_CD, a.CAT_NM, KBF_ATTR_ID, KBF_ATTR_NM, KBF_SHRT_NM, KBF_TYP_CD, GRP_USE_YN, b.USE_YN FROM ( SELECT * FROM cg_cat WHERE `L2_CD` = ? AND `LVL_VAL` = '3' ORDER BY SORT_SEQ )a, cg_kbf_l3 b WHERE a.cat_cd = b.l3_cd";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, l2);
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		ArrayList<KbfAttr> kbfList = new ArrayList<KbfAttr>();
+	    while(rs.next()) {
+	    	kbfList.add(new KbfAttr(rs));
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return kbfList;
+	}
+
+	/**
+	 * SELECT KBF_ATTR_ID, KBF_ATTR_VAL_ID, KBF_ATTR_VAL_NM, ETC_ATTR_VAL_YN, GRP_SORT_SEQ, SORT_SEQ, GRP_USE_YN FROM cg_kbf_val WHERE KBF_ATTR_ID = ? ORDER BY kbf_attr_id, SORT_SEQ
+	 * 
+	 * @param headerAttrCodeList
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public Hashtable<String, ArrayList<KbfAttrList>> getKbfAtrrList(ArrayList<String[]> headerAttrCodeList) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+
+		getConn();
+		Hashtable<String,ArrayList<KbfAttrList>> prodList = new Hashtable<String,ArrayList<KbfAttrList>>();
+		String sqlStmt = "SELECT KBF_ATTR_ID, KBF_ATTR_VAL_ID, KBF_ATTR_VAL_NM, ETC_ATTR_VAL_YN, GRP_SORT_SEQ, SORT_SEQ, GRP_USE_YN FROM cg_kbf_val WHERE KBF_ATTR_ID = ? ORDER BY kbf_attr_id, SORT_SEQ";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		ResultSet rs = null;
+		KbfAttrList kbfAttrList;
+		for(String[] kbfId : headerAttrCodeList) {
+			ArrayList<KbfAttrList> arrayOfKbfAttrList = new ArrayList<KbfAttrList>();
+			prepStmt.setString(1, kbfId[0]);
+			rs = prepStmt.executeQuery();
+			ArrayList<String[]> KbfAttrList = new ArrayList<String[]>();
+		    while(rs.next()) {
+		    	arrayOfKbfAttrList.add(new KbfAttrList(rs));
+		    }
+		    rs.close();
+		    prodList.put(kbfId[0], arrayOfKbfAttrList);
+		}
+		
+	    prepStmt.close();
+	    closeConn();
+	    return prodList;
+	}
+
+	/**
+	 * SELECT * FROM `prod_list5` WHERE L2_CD = ?
+	 * 
+	 * @param l2Cd
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public Hashtable<String,Prod> getProdListL2(String l2Cd) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		Hashtable<String,Prod> prodList = new Hashtable<String,Prod>();
+		String sqlStmt = "SELECT * FROM `prod_list5` WHERE L2_CD = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, l2Cd);
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		Prod prod;
+	    while(rs.next()) {
+	    	prod = new Prod(rs);
+	    	prodList.put(prod.getPROD_CD(),prod);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return prodList;
+	}
+
+	/**
+	 * SELECT * FROM `prod_list5` WHERE L2_CD = ?
+	 * 
+	 * @param l2Cd
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public ArrayList<Prod> getProdOrderListL2(String l2Cd) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		ArrayList<Prod> prodList = new ArrayList<Prod>();
+		String sqlStmt = "SELECT * FROM `prod_list5` WHERE L2_CD = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, l2Cd);
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		Prod prod;
+	    while(rs.next()) {
+	    	prodList.add(new Prod(rs));
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return prodList;
+	}
+
+	/**
+	 * SELECT * FROM `prod_list5` WHERE L2_CD = ?
+	 * 
+	 * @param l2Cd
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws SQLException
+	 */
+	public ArrayList<String> getOrderedProdListL2(String l2Cd) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		ArrayList<String> prodList = new ArrayList<String>();
+		String sqlStmt = "SELECT * FROM `prod_list5` WHERE L2_CD = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, l2Cd);
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+	    while(rs.next()) {
+	    	prodList.add(rs.getString("PROD_CD"));
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return prodList;
+	}
+
+	public ArrayList<String[]> getAttrCodeList(String l2Cd) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		ArrayList<String[]> prodList = new ArrayList<String[]>();
+		String sqlStmt = "select distinct kbf_attr_id, kbf_attr_nm from ( SELECT * FROM `prod_list5` WHERE L2_CD = ? ) a, cg_kbf_l3 b where a.l3_cd = b.l3_cd order by kbf_attr_id";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		prepStmt.setString(1, l2Cd);
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		String[] a;
+	    while(rs.next()) {
+	    	a = new String[2];
+	    	a[0] = rs.getString("kbf_attr_id");
+	    	a[1] = rs.getString("kbf_attr_nm");
+	    	prodList.add(a);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return prodList;
+	}
+
+	public Hashtable<String, ArrayList<KbfAttrValueList2>> selectKbfAttrValueSetList() throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		Hashtable<String, ArrayList<KbfAttrValueList2>> kbfAttrValueSetList = new Hashtable<String, ArrayList<KbfAttrValueList2>>();
+		String sqlStmt = "SELECT DISTINCT KBF_ATTR_ID FROM `cg_kbf_val`";
+		String sqlStmt2 = "SELECT * FROM `cg_kbf_val` WHERE KBF_ATTR_ID = ?";
+		System.out.println("SQL Statement:\n\t" + sqlStmt);
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		PreparedStatement prepStmt2 = conn.prepareStatement(sqlStmt2);
+		//System.out.println("Prepared Statement before bind variables set:\n\t" + prepStmt.toString());
+		//System.out.println("Prepared Statement after bind variables set:\n\t" + prepStmt.toString());
+		ResultSet rs = prepStmt.executeQuery();
+		ResultSet rs2;
+		KbfAttrValueList2 kavl;
+		ArrayList<KbfAttrValueList2> al;
+		String kbfAttrId;
+	    while(rs.next()) {
+	    	kbfAttrId = rs.getString("KBF_ATTR_ID");
+	    	prepStmt2.setString(1, kbfAttrId);
+	    	rs2 = prepStmt2.executeQuery();
+	    	al = new ArrayList<KbfAttrValueList2>();
+	    	while(rs2.next()) {
+	    		kavl = new KbfAttrValueList2(rs2);
+	    		al.add(kavl);
+	    	}
+	    	rs2.close();
+	    	kbfAttrValueSetList.put(kbfAttrId, al);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return kbfAttrValueSetList;
+	}
+
+	public Hashtable<String, SelectedData> selectOldKbf() throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {	
+		getConn();
+		Hashtable<String, SelectedData> selectedData = new Hashtable<String, SelectedData>();
+		String sqlStmt = "SELECT * FROM oldkbf";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		ResultSet rs = prepStmt.executeQuery();
+		SelectedData sd;
+	    while(rs.next()) {
+	    	sd = new SelectedData(rs);
+	    	selectedData.put(sd.getProd_cd()+":"+sd.getKbfAttrNm(), sd);
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return selectedData;
+	}
+
+	public String[] getWonsanji() throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		String[] t = new String[57];
+		ArrayList<String> ta = new ArrayList<String>();
+		String sqlStmt = "SELECT * FROM wonsanji";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		ResultSet rs = prepStmt.executeQuery();
+	    while(rs.next()) {
+	    	ta.add(rs.getString("UDV_2_VAL"));
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return ta.toArray(t);
+	}
+
+	public String getL2Code(String l1Code, String sheetName) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		getConn();
+		String sqlStmt = "SELECT * FROM cg_cat WHERE l1_cd = ? and CAT_NM = ?";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, l1Code);
+		prepStmt.setString(2, sheetName);
+		ResultSet rs = prepStmt.executeQuery();
+		String catCd = null;
+	    while(rs.next()) {
+	    	catCd = rs.getNString("CAT_CD");
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    closeConn();
+	    return catCd;
+	}
+
+	public String getL3Cd(String l1Code,String l2Code,String stringCellValue) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		//getConn();
+		String sqlStmt = "SELECT * FROM cg_cat WHERE l1_cd = ? and l2_cd = ? and CAT_NM = ?";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, l1Code);
+		prepStmt.setString(2, l2Code);
+		prepStmt.setString(3, stringCellValue);
+		ResultSet rs = prepStmt.executeQuery();
+		String catCd = null;
+	    while(rs.next()) {
+	    	if(rs.getString("CAT_CD").length() == 5)
+	    		catCd = rs.getString("CAT_CD");
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    //closeConn();
+	    return catCd;
+	}
+
+	public String getKbfAttrCode(String l3Cd, String kbfAttrNm)  throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		//getConn();
+		String sqlStmt = "SELECT * FROM cg_kbf_l3 WHERE l3_cd = ? and kbf_attr_nm = ?";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, l3Cd);
+		prepStmt.setString(2, kbfAttrNm);
+		ResultSet rs = prepStmt.executeQuery();
+		String catCd = null;
+	    while(rs.next()) {
+	    	catCd = rs.getNString("KBF_ATTR_ID");
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    //closeConn();
+	    return catCd;
+	}
+
+	public String getkbfAttrValCd(String kbfAttrCd, String kbfAttrValNm)   throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		//getConn();
+		String sqlStmt = "SELECT * FROM cg_kbf_val WHERE KBF_ATTR_ID = ? and KBF_ATTR_VAL_NM = ?";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, kbfAttrCd);
+		prepStmt.setString(2, kbfAttrValNm);
+		ResultSet rs = prepStmt.executeQuery();
+		String catCd = null;
+	    while(rs.next()) {
+	    	catCd = rs.getNString("KBF_ATTR_VAL_ID");
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    //closeConn();
+	    return catCd;
+	}
+
+	public String getProdCd(String catNm, String prodNm)   throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+		//getConn();
+		String sqlStmt = "SELECT * FROM prod_list WHERE PROD_NM = ?";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, prodNm);
+		ResultSet rs = prepStmt.executeQuery();
+		String catCd = "";
+	    while(rs.next()) {
+	    	catCd = rs.getNString("PROD_CD");
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    //closeConn();
+	    return catCd;
+	}
+
+	public int insertKbf(Kbf kbf) throws SQLException {
+		String sql = "INSERT INTO aggriresult VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	    PreparedStatement stmt = conn.prepareStatement(sql);
+	    stmt.setString(1 ,kbf.getL1Cd());
+	    stmt.setString(2 ,kbf.getL2Cd());
+	    stmt.setString(3 ,kbf.getL3Cd());
+	    stmt.setString(4 ,kbf.getProdCd());
+	    stmt.setString(5 ,kbf.getProdNm());
+	    stmt.setString(6 ,kbf.getKbfAttrNm()   !=null ? kbf.getKbfAttrNm()    : "");
+	    stmt.setString(7 ,kbf.getKbfAttrCd()   !=null ? kbf.getKbfAttrCd()    : "");
+	    stmt.setString(8 ,kbf.getKbfAttrVal()  !=null ? kbf.getKbfAttrVal()   : "");
+	    stmt.setString(9 ,kbf.getKbfAttrValNm()!=null ? kbf.getKbfAttrValNm() : "");
+	    stmt.setString(10,kbf.getDanCd());
+	    stmt.setString(11,kbf.getChamgo()      !=null ? kbf.getChamgo()       : "");
+	    stmt.setString(12,kbf.getNoExist()     !=null ? kbf.getNoExist()      : "");
+	    stmt.setString(13,"");
+	    int result = stmt.executeUpdate();
+	    
+		return result;
+		
+	}
+
+	public String getkbfAttrValCdWonsanzi(String kbfAttrCd, String kbfAttrValNm) throws SQLException {
+		//getConn();
+		String sqlStmt = "SELECT DTL_CD FROM  wonsanji WHERE DTL_CD_NM  = ?";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, kbfAttrValNm);
+		ResultSet rs = prepStmt.executeQuery();
+		String catCd = null;
+	    if(rs.next()) {
+	    	catCd = rs.getNString("DTL_CD");
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    //closeConn();
+	    return catCd;
+	}
+
+	public String getKbfDanwiCode(String str) throws SQLException {
+		//getConn();
+		String sqlStmt = "SELECT danCd FROM  danwui WHERE danNm  = ?";
+		PreparedStatement prepStmt = conn.prepareStatement(sqlStmt);
+		prepStmt.setString(1, str);
+		ResultSet rs = prepStmt.executeQuery();
+		String catCd = null;
+	    if(rs.next()) {
+	    	catCd = rs.getNString("danCd");
+	    }
+	    rs.close();
+	    prepStmt.close();
+	    //closeConn();
+	    return catCd;
+	}
 	
 }

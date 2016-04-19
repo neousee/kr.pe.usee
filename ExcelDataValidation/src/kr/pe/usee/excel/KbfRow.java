@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Set;
 
-import org.apache.poi.ss.usermodel.Row;
-
 public class KbfRow {
 	String l1;
 	String l2;

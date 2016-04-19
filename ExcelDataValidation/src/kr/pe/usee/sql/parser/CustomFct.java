@@ -17,8 +17,6 @@ package kr.pe.usee.sql.parser;
  */
 
 
-import java.sql.SQLException;
-import java.util.Vector;
 import java.io.*;
 
 import org.gibello.zql.*;

@@ -10,9 +10,6 @@ import kr.pe.usee.excel.ExcelPogReadable;
 import kr.pe.usee.excel.KbfRow;
 import kr.pe.usee.excel.PogRow;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-
 /**
  * MD들이 정해준 소분류별 KBF 속성 정의
  * 대분류	중분류	소분류	소분류별 세분류 리스트 소분류별 KBF 속성 리스트 속성1	속성2	속성3	속성4

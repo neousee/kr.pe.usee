@@ -16,6 +16,7 @@ public interface ReservedWord extends Serializable {
 	public static final String KWD_FOR_UPDATE  = "FOR UPDATE";
 	public static final Object KWD_WHERE       = "WHERE"     ;
 	public static final String LEFT_PARA       = "(";
+	public static final String KWD_ALL = "ALL";
 		
 
 }
